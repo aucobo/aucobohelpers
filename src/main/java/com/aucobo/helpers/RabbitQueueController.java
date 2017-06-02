@@ -15,8 +15,6 @@ import org.springframework.context.annotation.Configuration;
 
 
 
-
-
 @Configuration
 public class RabbitQueueController {
 	private static final Logger logger = Logger.getLogger(RabbitQueueController.class);
