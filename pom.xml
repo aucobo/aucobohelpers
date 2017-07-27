@@ -37,6 +37,22 @@
                 <target>1.8</target>
             </configuration>
 			</plugin>
+<!-- 			<plugin>				 -->
+<!-- 		        <groupId>org.apache.maven.plugins</groupId> -->
+<!-- 		        <artifactId>maven-install-plugin</artifactId> -->
+<!-- 		        <executions> -->
+<!-- 		          <execution> -->
+<!-- 		          	<id>installToLocalRepository</id> -->
+<!-- 		            <phase>install</phase> -->
+<!-- 		            <goals> -->
+<!-- 		              <goal>install-file</goal> -->
+<!-- 		            </goals> -->
+<!-- 		            <configuration> -->
+<!-- 		            <localRepositoryPath></localRepositoryPath> -->
+<!-- 		            </configuration> -->
+<!-- 		          </execution> -->
+<!-- 		        </executions> -->
+<!-- 		      </plugin> -->
 			<plugin>
 			  <groupId>org.apache.maven.plugins</groupId>
 			  <artifactId>maven-source-plugin</artifactId>
