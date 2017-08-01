@@ -149,7 +149,7 @@ public class RabbitQueueController {
 			return -1;
 		}
 		Integer consumerCount = (Integer) queueProperties.get("QUEUE_CONSUMER_COUNT");
-		logger.debug(queueName + ": QUEUE_CONSUMER_COUNT = " + consumerCount.toString());
+		logger.info(queueName + ": QUEUE_CONSUMER_COUNT = " + consumerCount.toString());
 		return (Integer) queueProperties.get("QUEUE_CONSUMER_COUNT");
 	}
 
