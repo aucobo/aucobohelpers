@@ -2,31 +2,31 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.aucobo.helpers.rabbitmq</groupId>
   <artifactId>rabbitmq-admin</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.0.3-SNAPSHOT</version>
   <name>rabbitmq-admin</name>
   <description>simplifies use of rabbitmq</description>
-  
+
   <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<start-class>com.aucobo.helpers.RabbitQueueController</start-class>
 		<java.version>1.8</java.version>
 	</properties>
-	
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.5.3.RELEASE</version>
-		<relativePath /> 
+		<relativePath />
 	</parent>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 	</dependencies>
-  
+
 	<build>
 		<plugins>
 			<plugin>
@@ -78,5 +78,5 @@
 			  </executions>
 			</plugin>
 		</plugins>
-	</build>  
+	</build>
 </project>
