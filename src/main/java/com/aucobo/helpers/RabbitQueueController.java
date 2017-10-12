@@ -16,11 +16,13 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * <p>
- * Since version 0.0.2 added constant for "QUEUE_CONSUMER_COUNT"
+ * Since version 0.0.2 added function getQueueConsumerCount()
+ * <p>
+ * Since version 0.0.3 added constant for "QUEUE_CONSUMER_COUNT"
  * Added javadoc some information.
  *
  *  @author Norman Möschter-Schenck
- *  @version 0.0.2
+ *  @version 0.0.3
  *  @since 2017-01-01
  */
 @Configuration
