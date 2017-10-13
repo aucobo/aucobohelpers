@@ -20,9 +20,11 @@ import org.springframework.context.annotation.Configuration;
  * <p>
  * Since version 0.0.3 added constant for "QUEUE_CONSUMER_COUNT"
  * Added javadoc some information.
+ * <p>
+ * Since version 0.0.4 upgrade to spring boot 1.5.7
  *
  *  @author Norman Möschter-Schenck
- *  @version 0.0.3
+ *  @version 0.0.4
  *  @since 2017-01-01
  */
 @Configuration
