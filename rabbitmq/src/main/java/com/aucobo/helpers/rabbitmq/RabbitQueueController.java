@@ -192,7 +192,7 @@ public class RabbitQueueController {
 //			logger.warn("no queueProperties exists for rabbitSender for queue: " + queueName);
 //			return -1;
 		}
-		Integer consumerCount = (Integer) queueProperties.get(RabbitPropertyTypes.QUEUECONSUMERCOUNT);
+		Integer consumerCount = (Integer) queueProperties.get(RabbitPropertyTypes.QUEUECONSUMERCOUNT.getValue());
 		return consumerCount;
 	}
 
