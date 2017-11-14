@@ -14,7 +14,12 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
+import com.aucobo.helpers.exceptions.NoQueueFoundException;
+
 /**
+ * 
+ * Handles/Creates/... rabbitmq queues and exchanges.
+ * 
  * <p>
  * Since version 0.0.2 added function getQueueConsumerCount()
  * <p>
@@ -22,17 +27,17 @@ import org.springframework.context.annotation.Configuration;
  * Added javadoc some information.
  * <p>
  * Since version 0.0.4 upgrade to spring boot 1.5.7
+ * <p>
+ * Since version 0.0.5 improved exception handling/throwing exceptions
  *
  *  @author Norman Möschter-Schenck
- *  @version 0.0.4
+ *  @version 0.0.5
  *  @since 2017-01-01
  */
 @Configuration
 public class RabbitQueueController {
 	private static final Logger logger = Logger.getLogger(RabbitQueueController.class);
 	@Autowired AmqpAdmin admin;
-
-	private static final String queueConsumerCount = "QUEUE_CONSUMER_COUNT";
 
 	public RabbitQueueController(){
 	}
@@ -174,19 +179,20 @@ public class RabbitQueueController {
 	 * get the count of consumers to a queue
 	 * @param queueName name of queue to check
 	 * @return Integer consumer count of rabbitmq queue
+	 * @throws NoQueueFoundException when no properties could be read, because there is no rabbitmq queue
 	 */
-	public Integer getQueueConsumerCount(String queueName){
+	public Integer getQueueConsumerCount(String queueName) throws NoQueueFoundException {
 		if( Objects.isNull(admin) ){
 			logger.fatal("no amqp admin object for rabbitSender");
 			return -1;
 		}
 		Properties queueProperties = admin.getQueueProperties(queueName);
 		if( Objects.isNull(queueProperties) ){
-			logger.warn("no queueProperties exists for rabbitSender for queue: " + queueName);
-			return -1;
+			throw new NoQueueFoundException("on getting the consuemr count, no queue exists with name: " + queueName);
+//			logger.warn("no queueProperties exists for rabbitSender for queue: " + queueName);
+//			return -1;
 		}
-		Integer consumerCount = (Integer) queueProperties.get(RabbitQueueController.queueConsumerCount);
-//		logger.info(queueName + ": " + RabbitQueueController.queueConsumerCount + " = " + consumerCount.toString());
+		Integer consumerCount = (Integer) queueProperties.get(RabbitPropertyTypes.QUEUECONSUMERCOUNT);
 		return consumerCount;
 	}
 
