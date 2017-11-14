@@ -1,4 +1,4 @@
-package com.aucobo.helpers;
+package com.aucobo.helpers.rabbitmq;
 
 /**
  * 

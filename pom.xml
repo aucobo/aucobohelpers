@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.aucobo.helpers</groupId>
   <artifactId>aucobo-helpers</artifactId>
-  <version>0.0.4-SNAPSHOT</version>
+  <version>0.0.5-SNAPSHOT</version>
   <name>aucobo-helpers</name>
   <description>Simplifies the use of commonly used functions and tools.</description>
 

@@ -1,4 +1,4 @@
-package com.aucobo.helpers.exceptions;
+package com.aucobo.helpers.rabbitmq.exceptions;
 
 /**
  * Is thrown when a rabbitmq queue

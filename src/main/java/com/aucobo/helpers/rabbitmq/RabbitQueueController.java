@@ -1,4 +1,4 @@
-package com.aucobo.helpers;
+package com.aucobo.helpers.rabbitmq;
 
 import java.util.Objects;
 import java.util.Properties;
@@ -14,7 +14,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
-import com.aucobo.helpers.exceptions.NoQueueFoundException;
+import com.aucobo.helpers.rabbitmq.exceptions.NoQueueFoundException;
 
 /**
  * 
