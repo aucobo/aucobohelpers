@@ -48,11 +48,11 @@ public class RabbitQueueController {
 	public boolean doesQueueExist(String queueName) throws AmqpConnectException, AmqpTimeoutException {
 		logger.info("Does queue exist: " + queueName);
 		if( Objects.isNull(admin) ){
-			logger.error("no amqp admin object for rabbitSender");
+			logger.fatal("no amqp admin object for rabbitSender");
 			return false;
 		}
 		if( Objects.isNull(queueName) ){
-			logger.info("new queue name given");
+			logger.warn("no queue name given");
 			return false;
 		}
 		if( Objects.isNull(admin.getQueueProperties(queueName)) ){
@@ -76,7 +76,7 @@ public class RabbitQueueController {
 		logger.info("create queue: " + queueName);
 		Queue queue = null;
 		if( Objects.isNull(admin) ){
-			logger.error("no amqp admin object for rabbitSender");
+			logger.fatal("no amqp admin object for rabbitSender");
 			return queue;
 		}
 
@@ -135,7 +135,7 @@ public class RabbitQueueController {
 	public boolean deleteQueue(String queueName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException {
 		logger.info("delete queue: " + queueName);
 		if( Objects.isNull(admin) ){
-			logger.error("no amqp admin object for rabbitSender");
+			logger.fatal("no amqp admin object for rabbitSender");
 			return false;
 		}
 		if ( doesQueueExist(queueName) ) {
@@ -158,7 +158,7 @@ public class RabbitQueueController {
 	public boolean purgeQueue(String queueName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException {
 		logger.info("purge queue: " + queueName);
 		if( Objects.isNull(admin) ){
-			logger.error("no amqp admin object for rabbitSender");
+			logger.fatal("no amqp admin object for rabbitSender");
 			return false;
 		}
 		if ( doesQueueExist(queueName) ) {
@@ -177,12 +177,12 @@ public class RabbitQueueController {
 	 */
 	public Integer getQueueConsumerCount(String queueName){
 		if( Objects.isNull(admin) ){
-			logger.error("no amqp admin object for rabbitSender");
+			logger.fatal("no amqp admin object for rabbitSender");
 			return -1;
 		}
 		Properties queueProperties = admin.getQueueProperties(queueName);
 		if( Objects.isNull(queueProperties) ){
-			logger.error("no queueProperties exists for rabbitSender");
+			logger.warn("no queueProperties exists for rabbitSender for queue: " + queueName);
 			return -1;
 		}
 		Integer consumerCount = (Integer) queueProperties.get(RabbitQueueController.queueConsumerCount);
@@ -192,7 +192,7 @@ public class RabbitQueueController {
 
 	private Queue getNewQueueAndBindToExchange(String queueName, String exchangeName, boolean durable) throws AmqpConnectException, AmqpIOException {
 		if( Objects.isNull(admin) ){
-			logger.error("no amqp admin object for rabbitSender");
+			logger.fatal("no amqp admin object for rabbitSender");
 			return null;
 		}
 
@@ -216,7 +216,7 @@ public class RabbitQueueController {
 		logger.info("create fanout exchange: " + exchangeName);
 		FanoutExchange exchange = null;
 		if( Objects.isNull(admin) ){
-			logger.error("no amqp admin object for rabbitSender");
+			logger.fatal("no amqp admin object for rabbitSender");
 			return exchange;
 		}
 
@@ -224,7 +224,7 @@ public class RabbitQueueController {
 		try{
 			admin.declareExchange(exchange);
 		}catch(AmqpIOException e){
-			logger.error("exchange already declared differently " + exchange.getName());
+			logger.warn("exchange already declared differently " + exchange.getName());
 			throw e;
 		}
 		logger.info("fanout exchange created: " + exchangeName);
