@@ -183,16 +183,24 @@ public class RabbitQueueController {
 	 */
 	public Integer getQueueConsumerCount(String queueName) throws NoQueueFoundException {
 		if( Objects.isNull(admin) ){
-			logger.fatal("no amqp admin object for rabbitSender");
-			return -1;
+			throw new NullPointerException("no admin");
+//			logger.fatal("no amqp admin object for rabbitSender");
+//			return -1;
 		}
 		Properties queueProperties = admin.getQueueProperties(queueName);
 		if( Objects.isNull(queueProperties) ){
+			logger.warn("no properties");
 			throw new NoQueueFoundException("on getting the consuemr count, no queue exists with name: " + queueName);
 //			logger.warn("no queueProperties exists for rabbitSender for queue: " + queueName);
 //			return -1;
 		}
-		Integer consumerCount = (Integer) queueProperties.get(RabbitPropertyTypes.QUEUECONSUMERCOUNT.getValue());
+		Integer consumerCount = 0;
+		try {
+			consumerCount = (Integer) queueProperties.get(RabbitPropertyTypes.QUEUECONSUMERCOUNT.getValue());
+		} catch (NullPointerException e) {
+			throw new NullPointerException("no admin" + e);
+//			logger.error("null when getting consumer count: " + e.getMessage());
+		}
 		return consumerCount;
 	}
 
