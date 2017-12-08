@@ -18,9 +18,9 @@ import com.aucobo.helpers.rabbitmq.exceptions.NoQueueFoundException;
 import com.aucobo.helpers.rabbitmq.exceptions.NoRabbitAdminException;
 
 /**
- * 
+ *
  * Handles/Creates/... rabbitmq queues and exchanges.
- * 
+ *
  * <p>
  * Since version 0.0.2 added function getQueueConsumerCount()
  * <p>
@@ -31,12 +31,14 @@ import com.aucobo.helpers.rabbitmq.exceptions.NoRabbitAdminException;
  * <p>
  * Since version 0.0.5 improved exception handling/throwing exceptions
  * <p>
- * Since version 0.0.6 
+ * Since version 0.0.6
  * javadoc and debug messages
- * added throw NoRabbitAdminException
+ * <p>
+ * Since version 0.0.6
+ * added NoRabbitAdminException
  *
  * @author Norman Möschter-Schenck
- * @version 0.0.6
+ * @version 0.0.7
  * @since 2017-01-01
  */
 @Configuration
@@ -192,7 +194,7 @@ public class RabbitQueueController {
 
 	/**
 	 * get the count of consumers to a queue
-	 * 
+	 *
 	 * @param queueName name of queue to check
 	 * @return Integer consumer count of rabbitmq queue
 	 * @throws NoQueueFoundException when no properties could be read, because there is no rabbitmq queue
@@ -205,7 +207,7 @@ public class RabbitQueueController {
 		Properties queueProperties = admin.getQueueProperties(queueName);
 		if( Objects.isNull(queueProperties) ){
 			throw new NoQueueFoundException("on getting the consuemr count, no queue exists with name: " + queueName);
-		}		
+		}
 		return (Integer) queueProperties.get(RabbitPropertyTypes.QUEUECONSUMERCOUNT.getValue());
 	}
 
@@ -239,10 +241,10 @@ public class RabbitQueueController {
 
 	/**
 	 * create new fanoutExchange, if it does not exists
-	 * 
+	 *
 	 * @param exchangeName name of exchange to create
 	 * @return created fanout exchange
-	 * 
+	 *
 	 * @throws AmqpConnectException amqp connection error
 	 * @throws AmqpIOException amqp io error
 	 * @throws AmqpTimeoutException amqp timeout error
