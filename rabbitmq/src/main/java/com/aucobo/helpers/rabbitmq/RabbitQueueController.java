@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 import com.aucobo.helpers.rabbitmq.exceptions.NoQueueFoundException;
+import com.aucobo.helpers.rabbitmq.exceptions.NoRabbitAdminException;
 
 /**
  * 
@@ -29,10 +30,14 @@ import com.aucobo.helpers.rabbitmq.exceptions.NoQueueFoundException;
  * Since version 0.0.4 upgrade to spring boot 1.5.7
  * <p>
  * Since version 0.0.5 improved exception handling/throwing exceptions
+ * <p>
+ * Since version 0.0.6 
+ * javadoc and debug messages
+ * added throw NoRabbitAdminException
  *
- *  @author Norman Möschter-Schenck
- *  @version 0.0.5
- *  @since 2017-01-01
+ * @author Norman Möschter-Schenck
+ * @version 0.0.6
+ * @since 2017-01-01
  */
 @Configuration
 public class RabbitQueueController {
@@ -53,7 +58,7 @@ public class RabbitQueueController {
 	public boolean doesQueueExist(String queueName) throws AmqpConnectException, AmqpTimeoutException {
 		logger.info("Does queue exist: " + queueName);
 		if( Objects.isNull(admin) ){
-			logger.fatal("no amqp admin object for rabbitSender");
+			logger.fatal("no amqp admin");
 			return false;
 		}
 		if( Objects.isNull(queueName) ){
@@ -76,13 +81,13 @@ public class RabbitQueueController {
 	 * @throws AmqpConnectException connection to rabbitmq not possible
 	 * @throws AmqpTimeoutException connection to rabbitmq timed out
 	 * @throws AmqpIOException read/write error with rabbitmq
+	 * @throws NoRabbitAdminException when no amqp admin could be created
 	 */
-	private Queue createQueue(String queueName, boolean durable) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException {
+	private Queue createQueue(String queueName, boolean durable) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException, NoRabbitAdminException {
 		logger.info("create queue: " + queueName);
 		Queue queue = null;
 		if( Objects.isNull(admin) ){
-			logger.fatal("no amqp admin object for rabbitSender");
-			return queue;
+			throw new NoRabbitAdminException("no amqp admin");
 		}
 
 		if(!doesQueueExist(queueName)) {
@@ -113,7 +118,12 @@ public class RabbitQueueController {
 	 * @throws AmqpIOException read/write error with rabbitmq
 	 */
 	public Queue createAutodeleteQueue(String queueName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException {
-		return createQueue(queueName, false);
+		try {
+			return createQueue(queueName, false);
+		} catch (NoRabbitAdminException e) {
+			logger.fatal("no amqp admin");
+			return null;
+		}
 	}
 	/**
 	 * create durable queue
@@ -125,7 +135,12 @@ public class RabbitQueueController {
 	 * @throws AmqpIOException read/write error with rabbitmq
 	 */
 	public Queue createDurableQueue(String queueName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException {
-		return createQueue(queueName, true);
+		try {
+			return createQueue(queueName, true);
+		} catch (NoRabbitAdminException e) {
+			logger.fatal("no amqp admin");
+			return null;
+		}
 	}
 
 
@@ -136,12 +151,12 @@ public class RabbitQueueController {
 	 * @throws AmqpConnectException connection to rabbitmq not possible
 	 * @throws AmqpTimeoutException connection to rabbitmq timed out
 	 * @throws AmqpIOException read/write error with rabbitmq
+	 * @throws NoRabbitAdminException when no amqp admin could be created
 	 */
-	public boolean deleteQueue(String queueName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException {
+	public boolean deleteQueue(String queueName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException, NoRabbitAdminException {
 		logger.info("delete queue: " + queueName);
 		if( Objects.isNull(admin) ){
-			logger.fatal("no amqp admin object for rabbitSender");
-			return false;
+			throw new NoRabbitAdminException("no amqp admin");
 		}
 		if ( doesQueueExist(queueName) ) {
 			admin.deleteQueue(queueName);
@@ -159,12 +174,12 @@ public class RabbitQueueController {
 	 * @throws AmqpConnectException connection to rabbitmq not possible
 	 * @throws AmqpTimeoutException connection to rabbitmq timed out
 	 * @throws AmqpIOException read/write error with rabbitmq
+	 * @throws NoRabbitAdminException when no amqp admin could be created
 	 */
-	public boolean purgeQueue(String queueName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException {
+	public boolean purgeQueue(String queueName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException, NoRabbitAdminException {
 		logger.info("purge queue: " + queueName);
 		if( Objects.isNull(admin) ){
-			logger.fatal("no amqp admin object for rabbitSender");
-			return false;
+			throw new NoRabbitAdminException("no amqp admin");
 		}
 		if ( doesQueueExist(queueName) ) {
 			admin.purgeQueue(queueName, true); // true = wait
@@ -177,37 +192,26 @@ public class RabbitQueueController {
 
 	/**
 	 * get the count of consumers to a queue
+	 * 
 	 * @param queueName name of queue to check
 	 * @return Integer consumer count of rabbitmq queue
 	 * @throws NoQueueFoundException when no properties could be read, because there is no rabbitmq queue
+	 * @throws NoRabbitAdminException when no amqp admin could be created
 	 */
-	public Integer getQueueConsumerCount(String queueName) throws NoQueueFoundException {
+	public Integer getQueueConsumerCount(String queueName) throws NoQueueFoundException, NoRabbitAdminException {
 		if( Objects.isNull(admin) ){
-			throw new NullPointerException("no admin");
-//			logger.fatal("no amqp admin object for rabbitSender");
-//			return -1;
+			throw new NoRabbitAdminException("no amqp admin when getting consumer count for: " + queueName);
 		}
 		Properties queueProperties = admin.getQueueProperties(queueName);
 		if( Objects.isNull(queueProperties) ){
-			logger.warn("no properties");
 			throw new NoQueueFoundException("on getting the consuemr count, no queue exists with name: " + queueName);
-//			logger.warn("no queueProperties exists for rabbitSender for queue: " + queueName);
-//			return -1;
-		}
-		Integer consumerCount = 0;
-		try {
-			consumerCount = (Integer) queueProperties.get(RabbitPropertyTypes.QUEUECONSUMERCOUNT.getValue());
-		} catch (NullPointerException e) {
-			throw new NullPointerException("no admin" + e);
-//			logger.error("null when getting consumer count: " + e.getMessage());
-		}
-		return consumerCount;
+		}		
+		return (Integer) queueProperties.get(RabbitPropertyTypes.QUEUECONSUMERCOUNT.getValue());
 	}
 
-	private Queue getNewQueueAndBindToExchange(String queueName, String exchangeName, boolean durable) throws AmqpConnectException, AmqpIOException {
+	private Queue getNewQueueAndBindToExchange(String queueName, String exchangeName, boolean durable) throws AmqpConnectException, AmqpIOException, NoRabbitAdminException {
 		if( Objects.isNull(admin) ){
-			logger.fatal("no amqp admin object for rabbitSender");
-			return null;
+			throw new NoRabbitAdminException("no amqp admin");
 		}
 
 		FanoutExchange exchange = CreateFanoutExchange(exchangeName);
@@ -217,21 +221,38 @@ public class RabbitQueueController {
 		return queue;
 	}
 	public Queue getNewAutodeleteQueueAndBindToExchange(String queueName, String exchangeName) throws AmqpConnectException, AmqpIOException {
-		return getNewQueueAndBindToExchange(queueName, exchangeName, false);
+		try {
+			return getNewQueueAndBindToExchange(queueName, exchangeName, false);
+		} catch (NoRabbitAdminException e) {
+			logger.fatal("no amqp admin");
+			return null;
+		}
 	}
 	public Queue getNewDurableQueueAndBindToExchange(String queueName, String exchangeName) throws AmqpConnectException, AmqpIOException {
-		return getNewQueueAndBindToExchange(queueName, exchangeName, true);
+		try {
+			return getNewQueueAndBindToExchange(queueName, exchangeName, true);
+		} catch (NoRabbitAdminException e) {
+			logger.fatal("no amqp admin");
+			return null;
+		}
 	}
 
-	/*
+	/**
 	 * create new fanoutExchange, if it does not exists
+	 * 
+	 * @param exchangeName name of exchange to create
+	 * @return created fanout exchange
+	 * 
+	 * @throws AmqpConnectException amqp connection error
+	 * @throws AmqpIOException amqp io error
+	 * @throws AmqpTimeoutException amqp timeout error
+	 * @throws NoRabbitAdminException when no amqp admin could be created
 	 */
-	public FanoutExchange CreateFanoutExchange(String exchangeName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException {
+	public FanoutExchange CreateFanoutExchange(String exchangeName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException, NoRabbitAdminException {
 		logger.info("create fanout exchange: " + exchangeName);
 		FanoutExchange exchange = null;
 		if( Objects.isNull(admin) ){
-			logger.fatal("no amqp admin object for rabbitSender");
-			return exchange;
+			throw new NoRabbitAdminException("no amqp admin");
 		}
 
 		exchange = new FanoutExchange(exchangeName);
