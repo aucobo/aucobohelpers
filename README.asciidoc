@@ -1,0 +1,264 @@
+= remote jars
+
+.purpose
+ Remote jars' source is kept here
+
+[IMPORTANT]
+====
+Remote jars are installed locally into the **mvn-repo** reposritory.
+
+**mvn-repo** repository needs to be checked out locally
+====
+
+== build  remote jar, that is to be used as dependency in other projects
+
+=== dependencies and build
+* add dependencies into pom
+** `mvn clean package` is possible
+* force update of SNAPSHOT dependencies
+** `mvn clean install -U`
+* <build>
+**  do not use `spring-boot-maven-plugin`
+*** internally puts the target files into a BOOT-INF folder
+
++
+[source, pom]
+----
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-maven-plugin</artifactId>
+----
+*** spring boot apps are bundled into a jar which contains the groupid/artifactid/ structure
+**** not on root level
+**** BUT within `BOOT-INF/classes`
+**** project that uses the remote jar cannot find the package this way
+***** the package is searched for on root level not within `BOOT-INF/classes`
+
+** instead use
++
+[source, pom]
+----
+<plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+  </configuration>
+</plugin>
+----
+
+[[mavenremotejar_buildjar]]
+.example pom.xml of remote jar
+[source, pom]
+----
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.aucobo.helpers</groupId> <1>
+  <artifactId>rabbitmq-admin</artifactId> <2>
+  <version>0.0.1-SNAPSHOT</version> <3>
+  <name>rabbitmq-admin</name>
+  <description>simplifies use of rabbitmq</description>
+
+  <properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<start-class>com.aucobo.helpers.RabbitQueueController</start-class>
+		<java.version>1.8</java.version>
+	</properties>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.3.RELEASE</version>
+		<relativePath />
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+            	<artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+            </configuration>
+			</plugin>
+      <plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-source-plugin</artifactId>
+			  <executions>
+			    <execution>
+			      <id>attach-sources</id>
+			      <goals>
+			        <goal>jar</goal>
+			      </goals>
+			    </execution>
+			  </executions>
+			</plugin>
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-javadoc-plugin</artifactId>
+			  <executions>
+			    <execution>
+			      <id>attach-javadocs</id>
+			      <goals>
+			        <goal>jar</goal>
+			      </goals>
+			    </execution>
+			  </executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+----
+<1> groupid as referenced in project that uses this <<mavenremotejar_adddependency, jar as dependency>>
+<2> artifactid as referenced in project that uses this <<mavenremotejar_adddependency, jar as dependency>>
+<3> version as referenced in project that uses this <<mavenremotejar_adddependency, jar as dependency>>
+
+[IMPORTANT]
+====
+the next step needs to be adjusted, so
+*  the artifact is installed/delpoyed into archiva, artifactory, nexxus, ...
+** including checksums etc.
+====
+
+[[mavenremotejar_installintorep]]
+=== "install" the created jar into a github repository (host for maven repository)
+[NOTE]
+====
+mvn-repo (maven artifact repository) has to be available locally
+This is a github repository which is used as host for a maven repository.
+====
+
+[NOTE]
+====
+jar, that is to be used as remote jar, is built using
+`mvn clean package`
+====
+
+[source, pom]
+----
+mvn install:install-file -DgroupId=com.aucobo.helpers <1>
+        -DartifactId=aucobo-helpers \ <2>
+        -Dversion=0.0.2-SNAPSHOT  <3>
+        -Dpackaging=jar \
+        -Dfile=/home/norman/aucobo/aucobohelpers/target/aucobo-helpers-0.0.2-SNAPSHOT.jar \ <4>
+        -DpomFile=/home/norman/aucobo/aucobohelpers/pom.xml  <5>
+        -DlocalRepositoryPath=/home/norman/aucobo/mvn-repo <6>
+        -DcreateChecksum=true <7>
+----
+<1> same value as used in <<mavenremotejar_buildjar, pom of remote jar>>
+<2> same value as used in <<mavenremotejar_buildjar, pom of remote jar>>
+<3> same value as used in <<mavenremotejar_buildjar, pom of remote jar>>
+<4> example path to artifact (of )remote jar)
+<5> example path to pom.xml of remote jar
+<6> example path to mvn-repo (github host as maven reppository)
+<7> create checksums, so maven can validate the artifact on dependency download
+
+// [source, pom]
+// ----
+// mvn install:install-file -DgroupId=com.aucobo.helpers.rabbitmq <1>
+//         -DartifactId=rabbitmq-admin \ <2>
+//         -Dversion=0.0.2-SNAPSHOT  <3>
+//         -Dpackaging=jar \
+//         -Dfile=/home/norman/aucobo/aucoborabbitmqhelpers/target/rabbitmq-admin-0.0.2-SNAPSHOT.jar \ <4>
+//         -DpomFile=/home/norman/aucobo/aucoborabbitmqhelpers/pom.xml  <5>
+//         -DlocalRepositoryPath=/home/norman/aucobo/mvn-repo <6>
+//         -DcreateChecksum=true <7>
+// ----
+// <1> same value as used in <<mavenremotejar_buildjar, pom of remote jar>>
+// <2> same value as used in <<mavenremotejar_buildjar, pom of remote jar>>
+// <3> same value as used in <<mavenremotejar_buildjar, pom of remote jar>>
+// <4> example path to artifact (of )remote jar)
+// <5> example path to pom.xml of remote jar
+// <6> example path to mvn-repo (github host as maven reppository)
+// <7> create checksums, so maven can validate the artifact on dependency download
+
+example:
+mvn install:install-file -DgroupId=com.aucobo.helpers.rabbitmq -DartifactId=rabbitmq-admin -Dversion=0.0.7-SNAPSHOT -Dpackaging=jar -Dfile=/home/norman/aucobo/aucobohelpers/rabbitmq/target/rabbitmq-admin-0.0.7-SNAPSHOT.jar -DpomFile=/home/norman/aucobo/aucobohelpers/rabbitmq/pom.xml -DlocalRepositoryPath=/home/norman/aucobo/mvn-repo -DcreateChecksum=true -Dsources=/home/norman/aucobo/aucobohelpers/rabbitmq/target/rabbitmq-admin-0.0.7-SNAPSHOT-sources.jar -Djavadoc=/home/norman/aucobo/aucobohelpers/rabbitmq/target/rabbitmq-admin-0.0.7-SNAPSHOT-javadoc.jar
+
+
+==== sources and javadoc
+create source jar
+mvn source:jar
+mvn javadoc:jar
+
+mvn deploy:deploy-file \
+    -DgroupId=com.jgoodies \
+    -DartifactId=jgoodies-forms \
+    -Dversion=1.6.0 \
+    -Dfile=jgoodies-forms-1.6.0.jar \
+    -Dsources=jgoodies-forms-1.6.0-sources.jar \
+    -Djavadoc=jgoodies-forms-1.6.0-javadoc.jar \
+    -Durl=file://path/to/your/local/repository
+
+.in mvn-repo
+[source, bash]
+----
+# initially
+git add --all
+git commit -m "message"
+git push -u origin master
+----
+
+
+[[mavenremotejar_adddependency]]
+=== in project that uses the a remote/cusotm jar as dependecy
+* `@SpringBootApplication(scanBasePackages = { "com.aucobo" })`
+** project itself has package structure similar to com.aucobo.core...
+** remote/custom jar
+* in `pom.xml`
+**
+<start-class>com.aucobo.core.workdistributer.WorkDistributerApplication</start-class>
+** get the pom of the remote jar, in order to get its dependencies
++
+[source, pom]
+----
+<dependencyManagement>
+		<dependencies>
+    <dependency>
+        <groupId>com.aucobo.helpers.rabbitmq</groupId>
+        <artifactId>rabbitmq-admin</artifactId>
+        <version>0.0.7-SNAPSHOT</version>
+        <scope>import</scope>
+        <type>pom</type>
+    </dependency>
+		</dependencies>
+	</dependencyManagement>
+----
+<1> same value as used in <<mavenremotejar_buildjar, pom of remote jar>>
+<2> same value as used in <<mavenremotejar_buildjar, pom of remote jar>>
+<3> same value as used in <<mavenremotejar_buildjar, pom of remote jar>>
+
+** add the repository (github as hostfor maven repository)
++
+[source, pom]
+----
+<repositories>
+		<repository>
+          <id>rabbitmq-admin</id>
+          <name>rabbitmq-admin</name>
+          <url>https://github.com/normoes/mvn-repo/raw/master/</url>
+          <snapshots>
+              <enabled>true</enabled>
+            </snapshots>
+		</repository>
+	</repositories>
+----
+** add the artifact as dependency
++
+[source, pom]
+----
+<dependency>
+    <groupId>com.aucobo.helpers.rabbitmq</groupId>
+    <artifactId>rabbitmq-admin</artifactId>
+    <version>0.0.7-SNAPSHOT</version>
+</dependency>
+----

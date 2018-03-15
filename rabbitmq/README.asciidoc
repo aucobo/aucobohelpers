@@ -1,0 +1,29 @@
+= rabbitmq remote jar
+
+.purpose
+ Wrappers for easily accessing rabbitmq functionalities using Java spring boot.
+
+.versions
+*******
+* Java 1.8
+* spring boot 1.5.7.RELEASE
+*******
+
+[IMPORTANT]
+====
+* **mvn-repo** repository needs to be checked out locally
+====
+
+
+== how it works
+[CAUTION]
+====
+Adapt paths within `install_to_mvn-repo.sh`
+====
+**rabbitmq** can be packaged into a jar
+
+`mvn clean package`
+
+and installed to the local **mvn-repo** repository using
+
+`install_to_mvn-repo.sh`
