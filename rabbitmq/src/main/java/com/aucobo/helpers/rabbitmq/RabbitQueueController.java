@@ -7,10 +7,7 @@ import org.apache.log4j.Logger;
 import org.springframework.amqp.AmqpConnectException;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.amqp.AmqpTimeoutException;
-import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
@@ -239,6 +236,19 @@ public class RabbitQueueController {
 		}
 	}
 
+	public Queue getNewQueueAndBindToTopicExchange(String queueName, String exchangeName, String routingKey) throws AmqpConnectException, AmqpIOException, NoRabbitAdminException {
+		if( Objects.isNull(admin) ){
+			throw new NoRabbitAdminException("no amqp admin");
+		}
+
+		TopicExchange exchange = createTopicExchange(exchangeName);
+
+		Queue queue = createQueue(queueName, true);
+		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(routingKey));
+
+		return queue;
+	}
+
 	/**
 	 * create new fanoutExchange, if it does not exists
 	 *
@@ -265,6 +275,24 @@ public class RabbitQueueController {
 			throw e;
 		}
 		logger.info("fanout exchange created: " + exchangeName);
+		return exchange;
+	}
+
+	public TopicExchange createTopicExchange(String exchangeName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException, NoRabbitAdminException {
+		logger.info("create topic exchange: " + exchangeName);
+		TopicExchange exchange = null;
+		if( Objects.isNull(admin) ){
+			throw new NoRabbitAdminException("no amqp admin");
+		}
+
+		exchange = new TopicExchange(exchangeName);
+		try{
+			admin.declareExchange(exchange);
+		}catch(AmqpIOException e){
+			logger.warn("exchange already declared differently " + exchange.getName());
+			throw e;
+		}
+		logger.info("topic exchange created: " + exchangeName);
 		return exchange;
 	}
 }
