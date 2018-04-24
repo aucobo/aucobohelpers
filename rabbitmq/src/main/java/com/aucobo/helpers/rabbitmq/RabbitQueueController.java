@@ -236,15 +236,13 @@ public class RabbitQueueController {
 		}
 	}
 
-	public Queue getNewQueueAndBindToTopicExchange(String queueName, String exchangeName, String routingKey) throws AmqpConnectException, AmqpIOException, NoRabbitAdminException {
+	public Queue getNewQueueAndBindToTopicExchange(String queueName, TopicExchange topicExchange, String routingKey) throws AmqpConnectException, AmqpIOException, NoRabbitAdminException {
 		if( Objects.isNull(admin) ){
 			throw new NoRabbitAdminException("no amqp admin");
 		}
 
-		TopicExchange exchange = createTopicExchange(exchangeName);
-
 		Queue queue = createQueue(queueName, true);
-		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(routingKey));
+		admin.declareBinding(BindingBuilder.bind(queue).to(topicExchange).with(routingKey));
 
 		return queue;
 	}
@@ -275,24 +273,6 @@ public class RabbitQueueController {
 			throw e;
 		}
 		logger.info("fanout exchange created: " + exchangeName);
-		return exchange;
-	}
-
-	public TopicExchange createTopicExchange(String exchangeName) throws AmqpConnectException, AmqpIOException, AmqpTimeoutException, NoRabbitAdminException {
-		logger.info("create topic exchange: " + exchangeName);
-		TopicExchange exchange = null;
-		if( Objects.isNull(admin) ){
-			throw new NoRabbitAdminException("no amqp admin");
-		}
-
-		exchange = new TopicExchange(exchangeName);
-		try{
-			admin.declareExchange(exchange);
-		}catch(AmqpIOException e){
-			logger.warn("exchange already declared differently " + exchange.getName());
-			throw e;
-		}
-		logger.info("topic exchange created: " + exchangeName);
 		return exchange;
 	}
 }
